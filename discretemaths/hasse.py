@@ -1,3 +1,6 @@
+import ast
+import operator 
+
 def show_op():
     op=['<','>','>=','==','!=']
     print(op)
@@ -5,6 +8,16 @@ def show_op():
     if op_use=="=":
         op_use = "=="
     return op_use
+
+def enter_relation():
+    rule = input("Enter relation rule:")
+    return rule
+
+def generate_tree(rule):
+    tree= ast.parse(rule,mode="eval")
+    print(ast.dump(tree,indent=2))
+    return tree
+
 
 def take_set():
     S=set()
@@ -22,14 +35,12 @@ def relation(a,b,x):
         return False
     
 S=take_set()
-
 print("Set is :",S)
-
 
 CP=set()
 
-op_use=show_op()
-print("Relation def is : a",op_use,"b")
+# op_use=show_op()
+# print("Relation def is : a",op_use,"b")
 
 
 R=set()
