@@ -69,7 +69,58 @@ def relation(a,b,x):
         return True
     else:
         return False
+
+def check_poset(S,R):
+    if (reflexive(S,R) and antisymmetric(R) and transitive(R)):
+        return True
+    else:
+        return False
+
+def reflexive(S,R):
+    for i in S:
+        if (i,i) not in R:
+            return False
+    return True
+
+def symmetric(R):
+    for i in R:
+        if (i[0],i[1]) in R and (i[1],i[0]) not in R:
+            return False
+    return True
+
+def transitive(R):
+    for i in R:
+        for j in R:
+            if i[1]==j[0] and (i[0],j[1]) not in R:
+                return False
+    return True
+
+def antisymmetric(R):
+    for i in R:
+        for j in R:
+            if i[0]==j[1] and i[1]==j[0] and i!=j:
+                return False
+    return True
+
+def immediate_relationships(S,R):
+    i_rels = set()
     
+    for i in R:
+        #i is a,b
+        immediate = True
+        a=i[0]
+        b=i[1]
+        if a==b:
+            continue
+        if a!=b:
+            for c in S:
+                if ((a,c) in R and (c,b) in R and (c!=a and c!=b)):                    
+                    immediate = False
+                    break
+        if immediate:
+            i_rels.add(i)
+    return i_rels
+
 S=take_set()
 print("Set is :",S)
 
@@ -85,13 +136,23 @@ tree = generate_tree(rule)
 for i in S:
     for j in S:
         x=(i,j)
-        print("x:",x)
+        # print("x:",x)
         CP.add(x)  
         if evaluate(tree.body, {"a" : i, "b" : j}):   
-            print("relation satisfied by:",x)   
+            #print("relation satisfied by:",x)   
             R.add(x)   
 
 print("Cartesian Product:",CP)
 print("Relation:",R)
+
+isPoset=False
+if check_poset(S,R):
+    print("The relation is a poset")
+    isPoset=True
+else:
+    print("The relation is not a poset")
+
+immediate_rels = immediate_relationships(S,R)
+print("Immediate relationships:", immediate_rels)
 
 

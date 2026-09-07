@@ -71,3 +71,21 @@ print(evaluate(tree.body, {"a" : 1, "b" : 8}))
 
 # print(eval("b == 2*a", {}, {"a": 2, "b": 4}))
 
+def immediate_relationships(S,R):
+    i_rels = set()
+    
+    for i in R:
+        #i is a,b
+        immediate = True
+        a=i[0]
+        b=i[1]
+        if a==b:
+            continue
+        if a!=b:
+            for c in S:
+                if ((a,c) in R and (c,b) in R and (c!=a and c!=b)):                    
+                    immediate = False
+                    break
+        if immediate:
+            i_rels.add(i)
+    return i_rels
