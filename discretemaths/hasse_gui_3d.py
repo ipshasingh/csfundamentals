@@ -1187,22 +1187,20 @@ class HasseWindow(QMainWindow):
             # Node label
             # ------------------------------------------------
 
+            # Keep the label attached to the 3D node so it rotates
+            # naturally with the diagram.
             self.ax.text(
                 x,
                 y,
                 z,
-
                 str(node),
-
-                color="#4A4655",
-
-                fontsize=10,
-
+                color="#403B4A",
+                fontsize=12,
                 fontweight="bold",
-
                 ha="center",
-
-                va="center"
+                va="center",
+                zorder=10,
+                clip_on=False
             )
 
 

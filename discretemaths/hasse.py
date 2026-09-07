@@ -252,20 +252,22 @@ if check_poset(S,R):
     print("The relation is a poset")
     isPoset=True
 else:
-    print("The relation is not a poset")
+    print("The relation is not a poset, no hasse diagram possible.")
 
-immediate_rels = immediate_relationships(S,R)
-print("Immediate relationships:", immediate_rels)
 
-levels=assign_levels(S, immediate_rels)
-print("Levels assigned to each element:", levels)
+if isPoset:
+    immediate_rels = immediate_relationships(S,R)
+    print("Immediate relationships:", immediate_rels)
 
-nbl = nodes_by_level(levels)
-print("Nodes by level:", nbl)
+    levels=assign_levels(S, immediate_rels)
+    print("Levels assigned to each element:", levels)
 
-pos = assign_positions(nbl)
-print("Positions:", pos)
+    nbl = nodes_by_level(levels)
+    print("Nodes by level:", nbl)
 
-draw_hasse(S, immediate_rels, pos)
+    pos = assign_positions(nbl)
+    print("Positions:", pos)
+
+    draw_hasse(S, immediate_rels, pos)
 
 
