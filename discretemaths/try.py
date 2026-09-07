@@ -76,6 +76,11 @@ def assign_levels(S, immediate_rels):
     # assigned to every element.
     return levels
 
+def nodes_by_level(S,levels):
+    node_level= {}
+    for node in S:
+        node_level[node]=  node_level.append()
+
 
 def evaluate(node, variables):
     if isinstance(node, ast.Constant):
@@ -116,7 +121,8 @@ def evaluate(node, variables):
         raise ValueError("Unsupported comparison operator") 
 
 # rule = "a == 2*b"
-rule = input("Enter relation rule: ")
+#rule = input("Enter relation rule: ")
+rule = "a==b"
 #rule = "b==a+b"
 #rule = "a==b-a"
 print("Relation rule:", rule)
@@ -126,9 +132,9 @@ tree = ast.parse(rule, mode="eval")
 print(ast.dump(tree, indent=2))
 
 print(evaluate(tree.body, {"a" : 1, "b" : 2}))
-print(evaluate(tree.body, {"a" : 10, "b" : 5}))
+print(evaluate(tree.body, {"a" : 5, "b" : 5}))
 print(evaluate(tree.body, {"a" : 3, "b" : 6}))
-print(evaluate(tree.body, {"a" : 1, "b" : 8}))
+print(evaluate(tree.body, {"a" : 8, "b" : 8}))
 
 # print(tree.body.left.id)
 # print(tree.body.ops[0])

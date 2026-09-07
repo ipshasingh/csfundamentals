@@ -54,6 +54,12 @@ def evaluate(node, variables):
             return left > right
         elif isinstance(node.ops[0], ast.GtE):
             return left >= right 
+
+    if isinstance(node, ast.BoolOp):
+        if isinstance(node.op, ast.And):
+            return all(evaluate(value, variables) for value in node.values)
+        elif isinstance(node.op, ast.Or):
+            return any(evaluate(value, variables) for value in node.values)
         else:
             raise ValueError("Unsupported comparison operator") 
 
@@ -134,6 +140,7 @@ def assign_levels(S, immediate_rels):
     #
     #       1 -> 2 -> 3
     #
+    G.add_nodes_from(S)
     G.add_edges_from(immediate_rels)
 
     # Create a dictionary to store the vertical level of every node.
@@ -183,9 +190,38 @@ def assign_levels(S, immediate_rels):
     # assigned to every element.
     return levels
 
+def nodes_by_level(levels):
+    nbl={}
+    for lvl in set(levels.values()):
+        nbl[lvl] = []
+        for node in levels:
+            if (levels[node] == lvl):
+                nbl[lvl].append(node)
+    return nbl
+
+def assign_positions(nbl):
+    pos = {}
+
+    for level, nodes in nbl.items():
+        count = len(nodes)
+
+        for index, node in enumerate(nodes):
+            x = index - (count - 1) / 2
+            y = level
+
+            pos[node] = (x, y)
+
+    return pos
 
 ##creating graph 
+def draw_hasse(S, immediate_rels, pos):
+    G = nx.Graph()
+    G.add_nodes_from(S)
+    G.add_edges_from(immediate_rels)
 
+    nx.draw(G, pos, with_labels=True)
+    plt.show()
+    
 
 S=take_set()
 print("Set is :",S)
@@ -224,5 +260,12 @@ print("Immediate relationships:", immediate_rels)
 levels=assign_levels(S, immediate_rels)
 print("Levels assigned to each element:", levels)
 
+nbl = nodes_by_level(levels)
+print("Nodes by level:", nbl)
+
+pos = assign_positions(nbl)
+print("Positions:", pos)
+
+draw_hasse(S, immediate_rels, pos)
 
 
