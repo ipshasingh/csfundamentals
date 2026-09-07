@@ -16,19 +16,64 @@ def draw_hasse(S,immediate_rels):
     #add cover relations as edges
     G.add_edges_from(immediate_rels)
 
-def assign_levels(S,immediate_rels):
-    # Create a directed graph from the immediate relationships
+def assign_levels(S, immediate_rels):
+    # Create an empty directed graph.
+    # We use a directed graph here because the cover relation has
+    # a direction: a -> b means "b is above a" in the poset.
     G = nx.DiGraph()
+
+    # Add all immediate/cover relationships as directed edges.
+    # For example, {(1,2), (2,3)} creates:
+    #
+    #       1 -> 2 -> 3
+    #
     G.add_edges_from(immediate_rels)
 
-    # Initialize levels dictionary
+    # Create a dictionary to store the vertical level of every node.
+    # Initially, we don't know the correct level, so every node starts at 0.
+    #
+    # Example:
+    # S = {1, 2, 3, 4}
+    # levels = {1: 0, 2: 0, 3: 0, 4: 0}
     levels = {node: 0 for node in S}
 
-    # Perform a topological sort to assign levels
+    # Process the nodes in topological order.
+    # A topological ordering places every node before its successors.
+    #
+    # For example:
+    #     1 -> 2 -> 3 -> 4
+    #
+    # gives:
+    #     1, 2, 3, 4
     for node in nx.topological_sort(G):
-        for successor in G.successors(node):
-            levels[successor] = max(levels[successor], levels[node] + 1)
 
+        # Find all nodes that are directly above the current node.
+        #
+        # If we have:
+        #     1 -> 2
+        #
+        # then G.successors(1) gives us 2.
+        for successor in G.successors(node):
+
+            # The successor must be at least one level above
+            # the current node.
+            #
+            # So if:
+            #     level[1] = 0
+            #
+            # then:
+            #     level[2] >= 1
+            #
+            # max() is used because a node can have multiple
+            # predecessors, and we want the highest level required
+            # by any of them.
+            levels[successor] = max(
+                levels[successor],
+                levels[node] + 1
+            )
+
+    # Return the completed dictionary containing the level
+    # assigned to every element.
     return levels
 
 
