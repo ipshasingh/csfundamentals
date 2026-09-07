@@ -1,5 +1,7 @@
 import ast
 import operator 
+import networkx as nx
+import matplotlib.pyplot as plt
 
 def show_op():
     op=['<','>','>=','==','!=']

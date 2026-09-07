@@ -1,9 +1,36 @@
 import ast
 import operator
+import networkx as nx
+import matplotlib.pyplot as plt
 
 def get_relation_rule():
     rule = input("Enter relation rule: ")
     return rule
+
+def draw_hasse(S,immediate_rels):
+    G=nx.Graph() #not using digvraph cuz hasse diagram doesnt use arrows but positioning
+
+    #adding elements as graph nodes
+    G.add_nodes_from(S)
+
+    #add cover relations as edges
+    G.add_edges_from(immediate_rels)
+
+def assign_levels(S,immediate_rels):
+    # Create a directed graph from the immediate relationships
+    G = nx.DiGraph()
+    G.add_edges_from(immediate_rels)
+
+    # Initialize levels dictionary
+    levels = {node: 0 for node in S}
+
+    # Perform a topological sort to assign levels
+    for node in nx.topological_sort(G):
+        for successor in G.successors(node):
+            levels[successor] = max(levels[successor], levels[node] + 1)
+
+    return levels
+
 
 def evaluate(node, variables):
     if isinstance(node, ast.Constant):
