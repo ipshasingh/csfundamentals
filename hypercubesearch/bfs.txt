@@ -1,0 +1,31 @@
+Queue = [start]
+Visited = {start}
+
+while queue isn't empty:
+
+    take the FIRST state from queue
+
+    if it's the goal:
+        stop
+
+    look at its neighbours
+
+    for each unvisited neighbour:
+        mark visited
+        remember its parent
+        add it to the queue
+
+Hamming distance: 
+d(0000,1111) = 4
+The number of positions where two binary strings differ
+
+
+A* chooses what state to explore using:
+
+$$ f(n) = g(n) + h(n) $$
+
+where:
+
+g(n) = actual cost from start → current
+h(n) = estimated cost from current → goal
+f(n) = total estimated cost
