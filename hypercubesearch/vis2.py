@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
-
+from logic import build_hypercube
 def visualize_hypercube(graph):
     G = nx.Graph()
 

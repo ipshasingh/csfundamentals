@@ -1,6 +1,9 @@
 from itertools import product
 from collections import deque
 import heapq
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import networkx as nx
 
 def build_hypercube(n):
     states = generate_states(n)
@@ -40,6 +43,168 @@ def bfs(graph, start, goal):
     path.reverse()
 
     return path, visited
+
+def bfs_with_events(graph, start, goal):
+    queue = deque([start])
+    visited = {start}
+    parent = {start: None}
+
+    events = []
+
+    # Initial state
+    events.append(("start", start))
+
+    while queue:
+        current = queue.popleft()
+
+        # Current node being explored
+        events.append(("current", current))
+
+        if current == goal:
+            events.append(("goal", current))
+            break
+
+        for neighbor in graph[current]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                parent[neighbor] = current
+                queue.append(neighbor)
+
+                # Node has entered the frontier
+                events.append(("frontier", neighbor))
+
+        # Current node has finished exploration
+        events.append(("explored", current))
+
+    # Reconstruct path
+    path = []
+    current = goal
+
+    while current is not None:
+        path.append(current)
+        current = parent[current]
+
+    path.reverse()
+
+    # Animate final path
+    events.append(("path", path))
+
+    return path, visited, events
+
+def animate_search(graph, start, goal, algorithm):
+
+    G = nx.Graph()
+
+    for state in graph:
+        G.add_node(state)
+
+    for state in graph:
+        for neighbor in graph[state]:
+            G.add_edge(state, neighbor)
+
+    # Fixed layout so nodes don't move during animation
+    pos = nx.spring_layout(G, seed=42)
+
+    path, visited, events = get_search_events(
+        graph,
+        start,
+        goal,
+        algorithm
+    )
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    def draw(frame):
+
+        ax.clear()
+
+        event_type, data, *details = events[frame]
+
+        # Default colour for every node
+        node_colors = []
+
+        for node in G.nodes:
+
+            if node == start:
+                node_colors.append("green")
+
+            elif node == goal:
+                node_colors.append("red")
+
+            else:
+                node_colors.append("lightblue")
+
+        # Apply animation states
+        for i, node in enumerate(G.nodes):
+
+            # Look at everything that has happened so far
+            for event in events[:frame + 1]:
+
+                event_type, data = event
+
+                if event_type == "frontier" and data == node:
+                    node_colors[i] = "gold"
+
+                elif event_type == "current" and data == node:
+                    node_colors[i] = "orange"
+
+                elif event_type == "explored" and data == node:
+                    node_colors[i] = "yellow"
+
+        # Draw graph
+        nx.draw_networkx_edges(
+            G,
+            pos,
+            ax=ax,
+            edge_color="gray"
+        )
+
+        nx.draw_networkx_nodes(
+            G,
+            pos,
+            ax=ax,
+            node_color=node_colors,
+            node_size=1200
+        )
+
+        nx.draw_networkx_labels(
+            G,
+            pos,
+            ax=ax,
+            font_size=10,
+            font_weight="bold"
+        )
+
+        # Draw final path once path event occurs
+        if event_type == "path":
+
+            path_edges = list(zip(data[:-1], data[1:]))
+
+            nx.draw_networkx_edges(
+                G,
+                pos,
+                ax=ax,
+                edgelist=path_edges,
+                edge_color="orange",
+                width=4
+            )
+
+        ax.set_title(
+            f"{algorithm} Search\n"
+            f"Step {frame + 1} / {len(events)}"
+        )
+
+        ax.axis("off")
+
+    animation = FuncAnimation(
+        fig,
+        draw,
+        frames=len(events),
+        interval=500,
+        repeat=False
+    )
+
+    plt.show()
 
 def dfs(graph, start, goal):
     stack = [start]
@@ -104,6 +269,47 @@ def hamming_distance(state, goal):
 
     return distance
 
+def dfs_with_events(graph, start, goal):
+    stack = [start]
+    visited = {start}
+    parent = {start: None}
+
+    events = []
+
+    events.append(("start", start))
+
+    while stack:
+        current = stack.pop()
+
+        events.append(("current", current))
+
+        if current == goal:
+            events.append(("goal", current))
+            break
+
+        for neighbor in graph[current]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                parent[neighbor] = current
+                stack.append(neighbor)
+
+                events.append(("frontier", neighbor))
+
+        events.append(("explored", current))
+
+    # Reconstruct path
+    path = []
+    current = goal
+
+    while current is not None:
+        path.append(current)
+        current = parent[current]
+
+    path.reverse()
+
+    events.append(("path", path))
+
+    return path, visited, events
 
 
 def a_star(graph, start, goal):
@@ -147,7 +353,7 @@ def a_star(graph, start, goal):
                 heapq.heappush(priority_queue, (f, neighbor))
 
     # Reconstruct path
-        path = []
+    path = []
     current = goal
 
     while current is not None:
@@ -157,6 +363,112 @@ def a_star(graph, start, goal):
     path.reverse()
 
     return path, visited
+
+def a_star_with_events(graph, start, goal):
+    priority_queue = []
+
+    heapq.heappush(priority_queue, (0, start))
+
+    visited = set()
+    parent = {start: None}
+    g_cost = {start: 0}
+
+    events = []
+
+    events.append(("start", start))
+
+    while priority_queue:
+
+        _, current = heapq.heappop(priority_queue)
+
+        if current in visited:
+            continue
+
+        visited.add(current)
+
+        h = hamming_distance(current, goal)
+        f = g_cost[current] + h
+
+        events.append((
+            "current",
+            current,
+            g_cost[current],
+            h,
+            f
+        ))
+
+        if current == goal:
+            events.append(("goal", current))
+            break
+
+        for neighbor in graph[current]:
+
+            new_g = g_cost[current] + 1
+
+            if neighbor not in g_cost or new_g < g_cost[neighbor]:
+
+                g_cost[neighbor] = new_g
+
+                h = hamming_distance(neighbor, goal)
+                f = new_g + h
+
+                parent[neighbor] = current
+
+                heapq.heappush(
+                    priority_queue,
+                    (f, neighbor)
+                )
+
+                events.append((
+                    "frontier",
+                    neighbor,
+                    new_g,
+                    h,
+                    f
+                ))
+
+        events.append(("explored", current))
+
+    # Reconstruct path
+    path = []
+    current = goal
+
+    while current is not None:
+        path.append(current)
+        current = parent[current]
+
+    path.reverse()
+
+    events.append(("path", path))
+
+    return path, visited, events
+
+def visualize_hypercube(graph):
+    G = nx.Graph()
+
+    # Add states
+    for state in graph:
+        G.add_node(state)
+
+    # Add edges
+    for state in graph:
+        for neighbor in graph[state]:
+            G.add_edge(state, neighbor)
+
+    pos = nx.spring_layout(G, seed=42)
+
+    plt.figure(figsize=(10, 8))
+
+    nx.draw(
+        G,
+        pos,
+        with_labels=True,
+        node_size=1200,
+        font_size=10
+    )
+
+    plt.title("Hypercube State Space")
+    plt.show()
 
 def run_experiment(max_dimension):
     results = []
@@ -186,16 +498,20 @@ def run_experiment(max_dimension):
         })
 
     return results
-    path = []
-    current = goal
 
-    while current is not None:
-        path.append(current)
-        current = parent[current]
+def get_search_events(graph, start, goal, algorithm):
 
-    path.reverse()
+    if algorithm == "BFS":
+        return bfs_with_events(graph, start, goal)
 
-    return path, visited
+    elif algorithm == "DFS":
+        return dfs_with_events(graph, start, goal)
+
+    elif algorithm == "A*":
+        return a_star_with_events(graph, start, goal)
+
+    else:
+        raise ValueError("Unknown algorithm")
 
 # print(generate_states(3))
 # print(get_neighbors("000"))
@@ -241,3 +557,10 @@ results = run_experiment(10)
 
 for result in results:
     print(result)
+
+graph = build_hypercube(4)
+
+start = "0000"
+goal = "1111"
+
+animate_search(graph, start, goal, "DFS")
